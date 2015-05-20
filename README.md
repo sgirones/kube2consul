@@ -1,5 +1,5 @@
 # kube2consul
-Add DNS records for each Kubernetes Service. It will use the service's PortalIP as the A record
+Add a DNS record for each Kubernetes Service. It will use the service's PortalIP
 
 Heavily inspired by https://github.com/GoogleCloudPlatform/kubernetes/tree/master/cluster/addons/dns/kube2sky
 
