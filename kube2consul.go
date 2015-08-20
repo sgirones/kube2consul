@@ -166,7 +166,7 @@ func newKubeClient() (*kclient.Client, error) {
 	if *argKubecfgFile == "" {
 		config = &kclient.Config{
 			Host:    masterUrl,
-			Version: "v1beta3",
+			Version: "v1",
 		}
 	} else {
 		var err error
