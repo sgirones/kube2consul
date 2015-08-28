@@ -28,15 +28,15 @@ import (
 	"os"
 	"time"
 
-	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
-	kclient "github.com/GoogleCloudPlatform/kubernetes/pkg/client"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/client/cache"
-	kclientcmd "github.com/GoogleCloudPlatform/kubernetes/pkg/client/clientcmd"
-	kclientcmdapi "github.com/GoogleCloudPlatform/kubernetes/pkg/client/clientcmd/api"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/controller/framework"
-	kcontrollerFramework "github.com/GoogleCloudPlatform/kubernetes/pkg/controller/framework"
-	kSelector "github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
+	kapi "k8s.io/kubernetes/pkg/api"
+	kclient "k8s.io/kubernetes/pkg/client/unversioned"
+	"k8s.io/kubernetes/pkg/client/unversioned/cache"
+	kclientcmd "k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	kclientcmdapi "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
+	"k8s.io/kubernetes/pkg/controller/framework"
+	kcontrollerFramework "k8s.io/kubernetes/pkg/controller/framework"
+	kSelector "k8s.io/kubernetes/pkg/fields"
+	"k8s.io/kubernetes/pkg/util"
 	"github.com/golang/glog"
 	consulapi "github.com/hashicorp/consul/api"
 )
@@ -72,7 +72,7 @@ func (ks *kube2consul) addDNS(record string, service *kapi.Service) error {
 		return nil
 	}
 
-	// if PortalIP is not set, do not create a DNS records
+	// if ClusterIP is not set, do not create a DNS records
 	if !kapi.IsServiceIPSet(service) {
 		glog.V(1).Infof("Skipping dns record for headless service: %s\n", service.Name)
 		return nil
@@ -82,11 +82,11 @@ func (ks *kube2consul) addDNS(record string, service *kapi.Service) error {
 		asr := &consulapi.AgentServiceRegistration{
 			ID:			 record,
 			Name: 	 record,
-			Address: service.Spec.PortalIP,
+			Address: service.Spec.ClusterIP,
 			Port:    service.Spec.Ports[0].Port,
 		}
 
-		glog.V(2).Infof("Setting DNS record: %v -> %v:%d\n", record, service.Spec.PortalIP, service.Spec.Ports[i].Port)
+		glog.V(2).Infof("Setting DNS record: %v -> %v:%d\n", record, service.Spec.ClusterIP, service.Spec.Ports[i].Port)
 		if err := ks.consulClient.Agent().ServiceRegister(asr); err != nil {
 			return err
 		}
@@ -166,7 +166,7 @@ func newKubeClient() (*kclient.Client, error) {
 	if *argKubecfgFile == "" {
 		config = &kclient.Config{
 			Host:    masterUrl,
-			Version: "v1beta3",
+			Version: "v1",
 		}
 	} else {
 		var err error
